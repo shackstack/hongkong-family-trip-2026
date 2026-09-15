@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>홍콩 가족 식도락 여행 · 상세 타임테이블 · 날짜별 동선 지도 v8</title>
+  <style>
+    :root{
+      --bg:#f7f4ef;
+      --paper:#fffdf9;
+      --ink:#1d1c1a;
+      --muted:#6f6a63;
+      --accent:#a33a2b;
+      --accent2:#d8a44a;
+      --line:#e8e0d5;
+      --green:#426c55;
+      --shadow:0 12px 32px rgba(70,45,25,.09);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:linear-gradient(180deg,#f5efe7 0,#faf7f2 260px,#f7f4ef 100%);
+      color:var(--ink);
+      line-height:1.65;
+    }
+    .wrap{max-width:1080px;margin:0 auto;padding:0 20px 64px}
+    header{
+      padding:64px 0 30px;
+      position:relative;
+    }
+    .eyebrow{
+      display:inline-flex;gap:8px;align-items:center;
+      color:var(--accent);font-weight:800;letter-spacing:.08em;font-size:.78rem;
+      text-transform:uppercase;
+    }
+    h1{
+      font-size:clamp(2.1rem,5vw,4.2rem);
+      line-height:1.04;margin:12px 0 16px;letter-spacing:-.045em;
+    }
+    .subtitle{
+      max-width:760px;color:var(--muted);font-size:1.02rem;margin:0;
+    }
+    .quick{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;
+    }
+    .quick .item{
+      background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-radius:18px;padding:16px;
+    }
+    .quick strong{display:block;font-size:.82rem;color:var(--muted);margin-bottom:3px}
+    .quick span{font-weight:800}
+    .stay{
+      margin:10px 0 26px;background:#23382d;color:white;border-radius:24px;
+      padding:22px 24px;box-shadow:var(--shadow);
+      display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;
+    }
+    .stay h2{margin:0 0 6px;font-size:1.15rem}
+    .stay p{margin:0;color:#d9e4dd}
+    .badge{
+      display:inline-flex;align-items:center;white-space:nowrap;
+      background:#f6d995;color:#3d2c0c;padding:9px 13px;border-radius:999px;font-weight:800;font-size:.82rem;
+    }
+    .tabs{
+      display:flex;gap:8px;position:sticky;top:10px;z-index:10;
+      background:rgba(247,244,239,.88);backdrop-filter:blur(12px);
+      border:1px solid var(--line);padding:8px;border-radius:18px;margin:26px 0 26px;
+      box-shadow:0 8px 22px rgba(50,30,15,.06);
+    }
+    .tab{
+      flex:1;border:0;background:transparent;padding:12px 10px;border-radius:12px;
+      color:var(--muted);font-weight:800;cursor:pointer;font-size:.92rem;
+    }
+    .tab.active{background:var(--ink);color:white}
+    .day{display:none}
+    .day.active{display:block}
+    .day-head{
+      display:flex;justify-content:space-between;gap:20px;align-items:end;margin:22px 2px 18px;
+    }
+    .day-head h2{font-size:1.9rem;margin:0;letter-spacing:-.03em}
+    .day-head p{margin:0;color:var(--muted);text-align:right}
+    .timeline{position:relative;margin-left:10px}
+    .timeline:before{
+      content:"";position:absolute;left:31px;top:8px;bottom:12px;width:2px;background:var(--line);
+    }
+    .stop{
+      position:relative;display:grid;grid-template-columns:64px 1fr;gap:18px;margin:0 0 18px;
+    }
+    .time{
+      width:64px;height:38px;border-radius:999px;background:var(--paper);
+      border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+      font-weight:900;font-size:.78rem;z-index:1;
+      box-shadow:0 4px 12px rgba(70,45,25,.05);
+    }
+    .card{
+      background:var(--paper);border:1px solid var(--line);border-radius:22px;
+      overflow:hidden;box-shadow:var(--shadow);
+    }
+    .card-body{padding:20px 22px}
+    .card h3{margin:0 0 5px;font-size:1.15rem}
+    .card p{margin:0;color:var(--muted)}
+    .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+    .chip{
+      font-size:.75rem;font-weight:800;color:#5c5044;background:#f3ece3;
+      border-radius:999px;padding:6px 10px;
+    }
+    .food{
+      margin-top:15px;display:grid;grid-template-columns:160px 1fr;gap:16px;
+      border-top:1px dashed var(--line);padding-top:15px;
+    }
+    .food img{
+      width:160px;height:125px;object-fit:cover;border-radius:16px;background:#eee;
+    }
+    .food h4{margin:1px 0 4px;font-size:1rem}
+    .photo-gallery{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px;
+    }
+    .photo-card{
+      overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff;
+    }
+    .photo-card img{width:100%;height:180px;object-fit:cover;display:block}
+    .photo-card .caption{padding:9px 11px;font-size:.78rem;color:var(--muted);line-height:1.4}
+    .photo-card .caption b{color:var(--ink)}
+    .photo-source{font-size:.72rem;color:#8a847c;margin-top:4px}
+    @media(max-width:620px){
+      .photo-gallery{grid-template-columns:1fr}
+      .photo-card img{height:210px}
+    }
+    .food p{font-size:.9rem}
+    .order{
+      color:var(--green)!important;font-weight:750;margin-top:7px!important;
+    }
+    .movie{
+      margin-top:14px;padding:13px 14px;border-radius:14px;
+      background:#eef2ff;border:1px solid #d9def6;color:#3e4563;font-size:.9rem;
+    }
+    .movie b{color:#232a4d}
+    .note{
+      border-left:4px solid var(--accent2);background:#fff8e9;border-radius:12px;
+      padding:12px 14px;margin-top:14px;color:#5d4b28;font-size:.9rem;
+    }
+    .highlight .card{border-color:#d7b78a;background:#fffaf1}
+    .highlight .time{background:var(--accent);color:white;border-color:var(--accent)}
+    .flight{
+      margin-top:28px;border-radius:24px;background:#171716;color:white;padding:22px;
+      display:flex;justify-content:space-between;gap:20px;align-items:center;
+    }
+    .flight strong{font-size:1.15rem}
+    .flight span{color:#c9c6c0}
+    footer{margin-top:34px;color:var(--muted);font-size:.84rem}
+    a{color:inherit}
+    .sources{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+    .sources summary{cursor:pointer;font-weight:800;color:#4f4942}
+    .sources ul{padding-left:18px}
+    @media(max-width:760px){
+      .quick{grid-template-columns:1fr 1fr}
+      .stay{grid-template-columns:1fr}
+      .tabs{top:6px}
+      .tab{font-size:.78rem;padding:10px 4px}
+      .day-head{display:block}
+      .day-head p{text-align:left;margin-top:4px}
+      .stop{grid-template-columns:54px 1fr;gap:12px}
+      .timeline:before{left:26px}
+      .time{width:54px;font-size:.7rem}
+      .food{grid-template-columns:1fr}
+      .food img{width:100%;height:190px}
+      .flight{display:block}
+      .flight span{display:block;margin-top:6px}
+    }
+  
+    .dinner-options {gap:16px;align-items:start}
+    .dinner-options .caption{padding:16px;font-size:.9rem;line-height:1.65}
+    .dinner-options h4{font-size:1.08rem;line-height:1.4;margin:9px 0 12px}
+    .dinner-options img{height:220px}
+    .dinner-options dl{margin:16px 0}
+    .dinner-options dt{font-weight:800;color:var(--accent);margin-top:13px}
+    .dinner-options dd{margin:3px 0 0;color:var(--muted)}
+    .dinner-options .photo-source{margin-top:12px;overflow-wrap:anywhere}
+    .sight-gallery .photo-card:last-child:nth-child(odd){grid-column:1 / -1}
+    .sight-gallery .photo-card:only-child img{height:280px}
+    .sight-gallery .caption{line-height:1.6}
+    @media(max-width:620px){.card-body{padding:18px 14px}.dinner-options img{height:190px}.sight-gallery .photo-card:only-child img{height:210px}}
+  
+.schedule{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;margin:0 0 30px;box-shadow:var(--shadow)}
+.schedule h3{margin:0;font-size:1.2rem}.schedule-intro{margin:5px 0 18px;color:var(--muted);font-size:.83rem}
+.schedule-row{display:grid;grid-template-columns:125px minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid var(--line)}
+.schedule-time{font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent);font-size:.88rem;padding-top:2px;white-space:nowrap}
+.schedule-row strong{font-size:.94rem}.schedule-row p{margin:3px 0 0;color:var(--muted);font-size:.83rem;line-height:1.6}
+.schedule-kind{display:inline-block;background:#f3ece3;color:#5c5044;padding:2px 7px;border-radius:6px;font-size:.72rem;margin-right:8px;vertical-align:1px}
+@media(max-width:620px){.schedule{padding:16px}.schedule-row{grid-template-columns:1fr;gap:4px}.schedule-time{font-size:.82rem}.schedule-row strong{font-size:.9rem}}
+
+.route-section{margin:0 0 26px;padding:22px;border-radius:22px;border:1px solid var(--line);background:var(--paper);box-shadow:var(--shadow)}
+.route-section h3{margin:0 0 8px}.route-section>p{margin:6px 0;color:var(--muted)}
+.route-map{height:420px;background:#e9e5df;border:1px solid var(--line);border-radius:14px;z-index:0;margin:12px 0}
+.map-help,.map-status{font-size:.8rem}.map-status{color:#6f6a63}.map-stops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.map-stop{display:flex;align-items:center;gap:10px;font-size:.88rem;min-width:0}.map-stop a{overflow-wrap:anywhere}
+.map-pin-link,.map-reset{cursor:pointer;border:1px solid var(--line);background:#f3ece3;border-radius:9px;padding:8px;color:var(--ink);font-weight:800}.map-pin-link{min-width:38px}.map-reset{margin:8px 0 0}.map-pin{background:transparent;border:0}.map-pin span{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;color:white;border:2px solid white;box-shadow:0 2px 6px #0004;font-weight:800;font-size:12px}.map-pin.optional span{border-style:dashed}
+.map-directions{font-size:.85rem}.map-directions summary{cursor:pointer;font-weight:800}.map-directions li{margin:10px 0}.map-directions small{display:block;color:var(--muted)}
+@media(max-width:620px){.route-section{padding:15px}.route-map{height:340px}.map-stops{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Hong Kong · Family Food Trip · v8</div>
+    <h1>홍콩 2박 3일<br>가족 식도락 여행</h1>
+    <p class="subtitle">50대 부부 + 30대 남성 2명. 관광지는 욕심내지 않고, 침사추이·센트럴·몽콕/야우마테이 축으로 움직이며 딤섬·차찬탱·고기국수·거위구이·광동식 해산물·디저트를 겹치지 않게 먹고, 동선에 겹치는 중경삼림 촬영지를 가볍게 지나가고, 화양연화의 금작찬청 옛 주소 방문을 선택할 수 있는 일정입니다.</p>
+
+    <div class="quick">
+      <div class="item"><strong>여행일</strong><span>9/24 목 — 9/26 토</span></div>
+      <div class="item"><strong>귀국편</strong><span>9/27 일 01:00</span></div>
+      <div class="item"><strong>여행 성격</strong><span>식도락 65 · 관광 35</span></div>
+      <div class="item"><strong>핵심 원칙</strong><span>한 지역씩 · 중간 휴식</span></div>
+    </div>
+  </header>
+
+  <div class="note" style="margin-bottom:22px"><b>상세 일정 기준</b> · 침사추이 북쪽 숙소 / 성인 4명 / 9월 24일 11:40 홍콩 도착 / 14시 호텔 도착 예상. 식당·차량 예약은 확정되지 않았습니다. 아래 시간표는 이동과 대기를 포함한 계획으로, 숙소·항공편·예약시간이 정해지면 조정하세요.</div>
+  <section class="stay">
+    <div>
+      <h2>🏨 숙소 추천 위치</h2>
+      <p><b>1순위 북부 침사추이</b> — Kimberley Rd / Cameron Rd / Chatham Rd South 부근. 2순위는 Jordan MTR 역 도보 5분권. 첫날·마지막 날 동선과 금요일 홍콩섬 이동의 균형이 가장 좋습니다.</p>
+    </div>
+    <div class="badge">TST MTR 도보 5–8분</div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-target="d1">9/24 · 침사추이</button>
+    <button class="tab" data-target="d2">9/25 · 센트럴/피크</button>
+    <button class="tab" data-target="d3">9/26 · 몽콕→공항</button>
+  </nav>
+
+  <section id="d1" class="day active">
+    <div class="day-head">
+      <h2>Day 1 · 침사추이 적응</h2>
+      <p>비행 피로를 고려해 숙소 주변에서만 천천히</p>
+    </div>
+    <section class="route-section" aria-label="날짜별 동선 지도"><h3>🗺️ 지도에서 동선 보기</h3><p>침사추이 안에서 남쪽 해변으로 내려간 뒤, 저녁 식당을 선택하는 동선입니다.</p><p class="map-help">번호는 방문 순서 · 실선은 기본 동선 · 점선은 선택·미확정 구간<br>핀은 대략적인 위치, 연결선은 순서 안내입니다. 실제 도로·페리 항로·도보 경로는 아래 길찾기에서 확인하세요.</p><button type="button" class="map-reset" data-map-reset="d1">전체 동선 보기</button><div id="route-d1" class="route-map" aria-label="확대 축소 가능한 동선 지도"></div><p class="map-status" id="status-d1">지도는 인터넷 연결이 필요합니다. 표시되지 않으면 아래 장소·길찾기 링크를 이용하세요.</p><div class="map-stops"><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="0" aria-label="지도에서 Chungking Mansions 보기">1</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Chungking+Mansions+Hong+Kong">Chungking Mansions</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="1" aria-label="지도에서 K11 MUSEA 보기">2</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=K11+MUSEA+Hong+Kong">K11 MUSEA</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="2" aria-label="지도에서 Avenue of Stars 보기">3</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Avenue+of+Stars+Hong+Kong">Avenue of Stars</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="3" aria-label="지도에서 Hoi King Heen 보기">4A</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Hoi+King+Heen+70+Mody+Road+Hong+Kong">Hoi King Heen</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="4" aria-label="지도에서 Seventh Son · Kowloon 보기">4B</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Seventh+Son+H+Zentre+15+Middle+Road+Hong+Kong">Seventh Son · Kowloon</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d1" data-index="5" aria-label="지도에서 하버 야경 · 침사추이 해변 보기">5</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Tsim+Sha+Tsui+Promenade+Hong+Kong">하버 야경 · 침사추이 해변</a></div></div><details class="map-directions"><summary>구간별 실제 길찾기 열기</summary><ul><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Chungking+Mansions+Hong+Kong&amp;destination=K11+MUSEA+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">1 Chungking Mansions → 2 K11 MUSEA</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=K11+MUSEA+Hong+Kong&amp;destination=Avenue+of+Stars+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">2 K11 MUSEA → 3 Avenue of Stars</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Avenue+of+Stars+Hong+Kong&amp;destination=Hoi+King+Heen+70+Mody+Road+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">3 Avenue of Stars → 4A Hoi King Heen</a><small> 도보 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Hoi+King+Heen+70+Mody+Road+Hong+Kong&amp;destination=Tsim+Sha+Tsui+Promenade+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">4A Hoi King Heen → 5 하버 야경 · 침사추이 해변</a><small> 도보 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Avenue+of+Stars+Hong+Kong&amp;destination=Seventh+Son+H+Zentre+15+Middle+Road+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">3 Avenue of Stars → 4B Seventh Son · Kowloon</a><small> 도보 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seventh+Son+H+Zentre+15+Middle+Road+Hong+Kong&amp;destination=Tsim+Sha+Tsui+Promenade+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">4B Seventh Son · Kowloon → 5 하버 야경 · 침사추이 해변</a><small> 도보 · 선택 구간</small></li></ul></details><div class="note">첫 끼 딤섬집과 호텔은 아직 확정되지 않아 핀을 찍지 않았습니다. 4A·4B는 둘 중 한 곳만 방문합니다.</div></section>
+<section class="schedule" aria-label="9/24 · 도착 후 침사추이 상세 시간표"><h3>하루 동선 한눈에 보기</h3><p class="schedule-intro">시간은 모두 홍콩 현지 시각 · 이동·대기는 계획용 예상치</p><div class="schedule-list"><div class="schedule-row"><div class="schedule-time">14:00–14:30</div><div><span class="schedule-kind">숙소</span><strong>체크인·짐 정리</strong><p>14시 호텔 도착 가정. 객실 준비 전이면 짐부터 맡기기</p></div></div><div class="schedule-row"><div class="schedule-time">14:30–14:45</div><div><span class="schedule-kind">휴식</span><strong>물 마시기·세면·외출 준비</strong><p>부모님은 로비나 객실에서 잠깐 쉬기</p></div></div><div class="schedule-row"><div class="schedule-time">14:45–15:00</div><div><span class="schedule-kind">이동</span><strong>호텔 → 딤섬집</strong><p>도보 10~15분 예상; 지점 확정 후 조정</p></div></div><div class="schedule-row"><div class="schedule-time">15:00–15:15</div><div><span class="schedule-kind">대기</span><strong>딤섬집 입장·주문</strong><p>대기 20분을 넘으면 인근 대안 선택</p></div></div><div class="schedule-row"><div class="schedule-time">15:15–16:00</div><div><span class="schedule-kind">식사</span><strong>Dim Sum Here 등 · 딤섬</strong><p>4명이 4~5종 공유. 저녁을 위해 과식하지 않기</p></div></div><div class="schedule-row"><div class="schedule-time">16:00–16:20</div><div><span class="schedule-kind">이동</span><strong>딤섬집 → Chungking Mansions</strong><p>Nathan Road 방향으로 천천히 이동</p></div></div><div class="schedule-row"><div class="schedule-time">16:20–16:30</div><div><span class="schedule-kind">관광</span><strong>Chungking Mansions 외관</strong><p>입구·간판 사진 위주 10분</p></div></div><div class="schedule-row"><div class="schedule-time">16:30–16:45</div><div><span class="schedule-kind">이동</span><strong>Chungking Mansions → K11 MUSEA</strong><p>도보 이동·횡단보도 여유 포함</p></div></div><div class="schedule-row"><div class="schedule-time">16:45–17:20</div><div><span class="schedule-kind">휴식</span><strong>K11 실내 구경·카페·화장실</strong><p>구경 15분 + 앉아서 쉬기 20분</p></div></div><div class="schedule-row"><div class="schedule-time">17:20–17:30</div><div><span class="schedule-kind">이동</span><strong>K11 → 스타의 거리</strong><p>해변 산책로로 이동</p></div></div><div class="schedule-row"><div class="schedule-time">17:30–17:55</div><div><span class="schedule-kind">관광</span><strong>스타의 거리·빅토리아 하버</strong><p>가족사진과 짧은 산책</p></div></div><div class="schedule-row"><div class="schedule-time">17:55–18:20</div><div><span class="schedule-kind">이동</span><strong>해변 → 선택한 저녁 식당</strong><p>Seventh Son은 H Zentre, Hoi King Heen은 Mody Road. 먼 쪽 기준 25분 확보</p></div></div><div class="schedule-row"><div class="schedule-time">18:20–18:30</div><div><span class="schedule-kind">대기</span><strong>예약 확인·착석·주문</strong><p>18:30 예약 목표이며 예약 완료 상태는 아님</p></div></div><div class="schedule-row"><div class="schedule-time">18:30–20:00</div><div><span class="schedule-kind">식사</span><strong>Hoi King Heen / Seventh Son</strong><p>단품 공유 기준 90분; 코스라면 최대 30분 연장</p></div></div><div class="schedule-row"><div class="schedule-time">20:00–20:20</div><div><span class="schedule-kind">이동</span><strong>식당 → 해변</strong><p>피곤하면 바로 호텔로 이동 가능</p></div></div><div class="schedule-row"><div class="schedule-time">20:20–20:45</div><div><span class="schedule-kind">관광</span><strong>빅토리아 하버 야경</strong><p>공연 시간에 맞추지 않고 야경만 편하게 감상</p></div></div><div class="schedule-row"><div class="schedule-time">20:45–21:10</div><div><span class="schedule-kind">이동</span><strong>해변 → 호텔</strong><p>도보 또는 택시; 이후 자유 휴식</p></div></div></div><div class="note">도착이 늦으면 K11 구경과 낮 하버 산책을 줄이고 저녁 예약 시간을 우선합니다. 첫날 11:40 홍콩 도착 후 입국·수하물 수령·시내 이동을 거쳐 14시 호텔 도착을 예상합니다. 도착 지연 시 첫날 관광 시간을 줄입니다.</div></section>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">14:00</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>호텔 체크인 & 짐 정리</h3>
+            <p>침사추이 북쪽 숙소를 기준으로 첫날 이동거리를 최소화합니다.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">15:00</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🥟 첫 끼 · Dim Sum Here / 침사추이권 딤섬</h3>
+            <p>첫날은 숙소 근처에서 대기시간이 과하지 않은 딤섬집을 선택합니다. 우선 후보는 <b>Dim Sum Here</b> 계열 또는 침사추이권 평점 좋은 딤섬집. 한 번에 많이 먹기보다 여러 종류를 4명이 나눠 먹습니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk-cloud/main/dining/local-cuisine-to-try-on-temple-street/dim-sum-here-960x720-02.jpg" alt="Dim Sum Here 실제 음식 사진">
+              <div>
+                <h4>Dim Sum Here 실제 메뉴 예시</h4>
+                <p>홍콩관광청에 소개된 Dim Sum Here의 실제 음식 사진. 창펀, 흑금 유사바오, 찜밥 등 전통 딤섬에 변형 메뉴가 섞여 있어 4명이 여러 종류를 나눠 먹기 좋습니다.</p>
+                <p class="order">추천 주문: 4~5종 × 1판씩 + 차</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">16:20</div>
+        <article class="card"><div class="card-body">
+          <h3>🎬 Chungking Mansions → K11 MUSEA → 스타의 거리</h3>
+          <p>Nathan Road를 따라 이동하면서 <b>중경삼림 1부의 핵심 배경인 중경대厦</b> 외관만 가볍게 보고 지나갑니다. 이후 K11에서 더운 시간을 보내고, 해가 낮아질 무렵 빅토리아 하버로 이동합니다.</p>
+          <div class="movie"><b>중경삼림 포인트</b> · Chungking Mansions, 36–44 Nathan Road. 별도 관람시간을 잡기보다 5~10분 정도 외관·입구 분위기만 보고 지나가는 구성.</div>
+          <div class="meta"><span class="chip">중경삼림</span><span class="chip">실내 휴식</span><span class="chip">도보 이동</span><span class="chip">가족 사진</span></div>
+        <div class="photo-gallery sight-gallery"><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/c/chungking-mansions/chungking-mansions-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/c/chungking-mansions/chungking-mansions-01.jpg" alt="Chungking Mansions · 중경대하 실제 장소 사진" decoding="async"></a><div class="caption"><b>Chungking Mansions · 중경대하</b><br>Nathan Road의 입구 풍경. 영화의 분위기를 떠올리며 외관을 5~10분만 둘러봅니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-chungking-mansions.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/k/k11-musea/k11-musea-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/k/k11-musea/k11-musea-01.jpg" alt="K11 MUSEA 실제 장소 사진" decoding="async"></a><div class="caption"><b>K11 MUSEA</b><br>실내 건축과 예술 작품을 보며 잠시 더위를 피하는 구간. 카페에서 앉아 쉬어도 좋습니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-k11-musea.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/avenue-of-stars/avenue-of-stars-02.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/avenue-of-stars/avenue-of-stars-02.jpg" alt="Avenue of Stars · 스타의 거리 실제 장소 사진" decoding="async"></a><div class="caption"><b>Avenue of Stars · 스타의 거리</b><br>바다 건너 홍콩섬을 바라보는 산책로. 가족사진을 남기고 저녁 식사로 이동합니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-avenue-of-stars.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div></div></div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">18:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🍖 첫날 저녁 후보 · 침사추이 광동식 가족식</h3>
+<p>18:30 예약을 기준으로 <b>Hoi King Heen / Seventh Son Restaurant Kowloon</b> 중 한 곳을 선택합니다. 15시 딤섬을 가볍게 먹고, 저녁에는 로스트류·채소·밥을 4명이 나누는 구성입니다.</p>
+<div class="photo-gallery dinner-options">
+<section class="photo-card"><img referrerpolicy="no-referrer" src="https://www.hongkong.intercontinental.com/wp-content/uploads/sites/33/2019/07/IMG_5334_3000x2000-2000x1300.jpg" alt="Hoi King Heen 공식 차슈 음식 사진">
+<div class="caption"><div class="photo-source"><a href="https://www.hongkong.intercontinental.com/dining/hoi-king-heen-chinese-restaurant/" target="_blank" rel="noopener">실제 차슈 사진 · 호텔 공식 갤러리</a></div><h4>후보 A · Hoi King Heen 海景軒</h4><span class="chip">편안한 호텔 식사 우선</span>
+<dl><dt>위치</dt><dd>InterContinental Grand Stanford B2<br>70 Mody Road, East Tsim Sha Tsui</dd>
+<dt>대표 메뉴</dt><dd>우량예 흑돼지 차슈, 크리스피 포크, 크리스피 치킨, 게살을 채운 튀김 게딱지.</dd>
+<dt>분위기</dt><dd>중국 전통 중정에서 영감을 얻은 차분한 호텔 레스토랑. 가족끼리 앉아 대화하며 식사하기 좋습니다.</dd>
+<dt>가격감</dt><dd>고급 광동식. 공식 2026년 3월 저녁 메뉴: 차슈 <b>HK$328</b>, 크리스피 포크 <b>HK$248</b>, 치킨 반 마리 <b>HK$299</b>, 게딱지 <b>HK$308/인</b>. 서비스료 10% 별도.</dd>
+<dt>4인 예상 예산</dt><dd><b>HK$1,800–2,600</b> (1인 약 HK$450–650). 단품 공유·서비스료와 차를 고려한 계획용 추정이며 주류·고급 해산물 제외. 코스는 1인 HK$988/1,088에 서비스료 별도.</dd>
+<dt>가족여행 추천 이유</dt><dd>비행 후 첫 저녁에 편하게 앉아 먹기 좋고, 차슈·치킨·채소로 익숙한 맛부터 고를 수 있습니다.</dd></dl>
+<p class="order">4인 주문 예시: 차슈 + 크리스피 포크 또는 치킨 반 마리 + 채소 + 볶음밥. 게딱지는 인원수와 예산에 맞춰 추가.</p>
+<p class="photo-source">저녁 18:00–22:30 · +852 2731 2883<br>스마트 캐주얼: 남성 반바지·민소매, 슬리퍼는 피하세요.<br><a href="https://www.signatureclub.com.hk/assets/images/menu/HKH/2026/HKH%20-%20March%20-%20Dinner%20Menu.pdf?v=1" target="_blank" rel="noopener">공식 저녁 메뉴·가격 확인</a></p>
+</div></section>
+<section class="photo-card"><img referrerpolicy="no-referrer" src="https://www.seventhson.hk/image/cache/data/seventhson/SignatureDishes/144824874200155300-492x390-w_c.jpg" alt="Seventh Son 공식 새끼돼지 구이 음식 사진">
+<div class="caption"><div class="photo-source"><a href="https://www.seventhson.hk/delicacy.html" target="_blank" rel="noopener">실제 새끼돼지 구이 · 브랜드 공식 사진 (지점 촬영 표기 없음)</a></div><h4>후보 B · Seventh Son Restaurant 家全七福</h4><span class="chip">Kowloon · 침사추이 지점</span>
+<dl><dt>위치</dt><dd>7/F, H Zentre, 15 Middle Road<br>Restaurant 701 &amp; 702, Tsim Sha Tsui</dd>
+<dt>대표 메뉴</dt><dd>새끼돼지 구이(紅燒乳豬), 칠복 크리스피 치킨, 게살·양파를 채운 구운 게딱지, 관자 연잎밥.</dd>
+<dt>분위기</dt><dd>전통 광동식 가족모임·회식에 어울리는 정찬 레스토랑. 여러 요리를 함께 나눠 먹는 식사에 잘 맞습니다.</dd>
+<dt>가격감</dt><dd>고급 광동식. 새끼돼지·전복·해산물 선택에 따라 비용 차이가 큽니다. 온라인 메뉴는 게시 시점이 섞여 있어 현재 단품 가격은 지점에 확인해야 합니다.</dd>
+<dt>4인 예상 예산</dt><dd><b>HK$2,800–4,400</b> (1인 약 HK$700–1,100). 단품 공유·차·서비스료 여유를 포함한 계획용 추정으로, 확정 견적이 아닙니다. 통돼지·고급 건해산물·주류 제외.</dd>
+<dt>가족여행 추천 이유</dt><dd>4명이 치킨·게딱지·밥을 나눠 전통 광동요리를 비교해 먹기 좋습니다. H Zentre 위치는 K11·스타의 거리 일정과 연결하기 편합니다.</dd></dl>
+<p class="order">4인 주문 예시: 크리스피 치킨 + 게딱지(인원수 조절) + 채소 + 연잎밥. 새끼돼지는 소량 주문 가능 여부와 사전 주문 조건을 먼저 확인.</p>
+<p class="photo-source">Kowloon 지점 문의: +852 2361 3363<br><a href="https://www.seventhson.hk/menu" target="_blank" rel="noopener">공식 메뉴 (香港尖沙咀店 선택)</a> · <a href="https://www.redhotoffers.hsbc.com.hk/media/76184122/contact_YRO2025_Batch2_0085_Seventh-Son-Restaurant-Limited_EN.pdf" target="_blank" rel="noopener">지점 주소 확인</a></p>
+</div></section></div>
+<div class="note"><b>선택 가이드</b> · 첫날 피로와 무난한 주문 구성을 우선하면 Hoi King Heen, 전통 광동요리를 여러 접시 나눠 먹는 경험을 우선하면 Seventh Son. 두 곳 모두 예약 전 4인 총액과 원하는 요리의 주문 조건을 확인하세요. 정찬은 90~120분을 예상해 하버 산책을 20:00~20:30 사이로 유연하게 잡습니다.<br>메뉴·사진 출처 확인: 2026.09.15. 사진은 실제 음식의 참고 이미지이며 당일 플레이팅·판매 메뉴와 다를 수 있습니다.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">20:20</div>
+        <article class="card"><div class="card-body">
+          <h3>빅토리아 하버 야경 → 숙소</h3>
+          <p>첫날은 여기서 종료. 다음 날 센트럴과 피크 일정에 대비해 체력을 남깁니다.</p>
+        <div class="photo-gallery sight-gallery"><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/avenue-of-stars/avenue-of-stars-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/avenue-of-stars/avenue-of-stars-01.jpg" alt="Victoria Harbour · 빅토리아 하버 실제 장소 사진" decoding="async"></a><div class="caption"><b>Victoria Harbour · 빅토리아 하버</b><br>스타의 거리에서 보는 실제 항구 야경. 저녁 식사가 길어지면 산책 시작도 여유 있게 늦춥니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-avenue-of-stars.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div></div></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="d2" class="day">
+    <div class="day-head">
+      <h2>Day 2 · 센트럴 + 화양연화 + 피크</h2>
+      <p>카우키·거위구이 + 금작찬청 옛 주소 방문 선택</p>
+    </div>
+    <section class="route-section" aria-label="날짜별 동선 지도"><h3>🗺️ 지도에서 동선 보기</h3><p>스타페리로 홍콩섬에 들어가 센트럴 골목을 걷고, 오후에 피크로 이동합니다.</p><p class="map-help">번호는 방문 순서 · 실선은 기본 동선 · 점선은 선택·미확정 구간<br>핀은 대략적인 위치, 연결선은 순서 안내입니다. 실제 도로·페리 항로·도보 경로는 아래 길찾기에서 확인하세요.</p><button type="button" class="map-reset" data-map-reset="d2">전체 동선 보기</button><div id="route-d2" class="route-map" aria-label="확대 축소 가능한 동선 지도"></div><p class="map-status" id="status-d2">지도는 인터넷 연결이 필요합니다. 표시되지 않으면 아래 장소·길찾기 링크를 이용하세요.</p><div class="map-stops"><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="0" aria-label="지도에서 침사추이 스타페리 선착장 보기">1</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Tsim+Sha+Tsui+Star+Ferry+Pier">침사추이 스타페리 선착장</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="1" aria-label="지도에서 센트럴 스타페리 선착장 보기">2</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Central+Pier+7+Hong+Kong">센트럴 스타페리 선착장</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="2" aria-label="지도에서 Graham Street Market 보기">3</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Graham+Street+Market+Hong+Kong">Graham Street Market</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="3" aria-label="지도에서 미드레벨 에스컬레이터 · SoHo 구간 보기">4</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Central+Mid+Levels+Escalator+Hong+Kong">미드레벨 에스컬레이터 · SoHo 구간</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="4" aria-label="지도에서 Tai Cheong Bakery 보기">5</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Tai+Cheong+Bakery+35+Lyndhurst+Terrace">Tai Cheong Bakery</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="5" aria-label="지도에서 Lan Kwai Fong 보기">6</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Lan+Kwai+Fong+Hong+Kong">Lan Kwai Fong</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="6" aria-label="지도에서 Kau Kee 보기">7</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Kau+Kee+21+Gough+Street">Kau Kee</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="7" aria-label="지도에서 Yat Lok 보기">8</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Yat+Lok+34+Stanley+Street">Yat Lok</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="8" aria-label="지도에서 Goldfinch 옛 주소 · 선택 보기">9A</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=13-15+Lan+Fong+Road+Causeway+Bay+Hong+Kong">Goldfinch 옛 주소 · 선택</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="9" aria-label="지도에서 IFC 휴식 · 대안 보기">9B</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=IFC+Mall+Hong+Kong">IFC 휴식 · 대안</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d2" data-index="10" aria-label="지도에서 Victoria Peak · Peak Tower 보기">10</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=The+Peak+Tower+Hong+Kong">Victoria Peak · Peak Tower</a></div></div><details class="map-directions"><summary>구간별 실제 길찾기 열기</summary><ul><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Tsim+Sha+Tsui+Star+Ferry+Pier&amp;destination=Central+Pier+7+Hong+Kong&amp;travelmode=transit" target="_blank" rel="noopener">1 침사추이 스타페리 선착장 → 2 센트럴 스타페리 선착장</a><small> 대중교통 · 스타페리 선택 확인</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Central+Pier+7+Hong+Kong&amp;destination=Graham+Street+Market+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">2 센트럴 스타페리 선착장 → 3 Graham Street Market</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Graham+Street+Market+Hong+Kong&amp;destination=Central+Mid+Levels+Escalator+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">3 Graham Street Market → 4 미드레벨 에스컬레이터 · SoHo 구간</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Central+Mid+Levels+Escalator+Hong+Kong&amp;destination=Tai+Cheong+Bakery+35+Lyndhurst+Terrace&amp;travelmode=walking" target="_blank" rel="noopener">4 미드레벨 에스컬레이터 · SoHo 구간 → 5 Tai Cheong Bakery</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Tai+Cheong+Bakery+35+Lyndhurst+Terrace&amp;destination=Lan+Kwai+Fong+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">5 Tai Cheong Bakery → 6 Lan Kwai Fong</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Lan+Kwai+Fong+Hong+Kong&amp;destination=Kau+Kee+21+Gough+Street&amp;travelmode=walking" target="_blank" rel="noopener">6 Lan Kwai Fong → 7 Kau Kee</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Kau+Kee+21+Gough+Street&amp;destination=Yat+Lok+34+Stanley+Street&amp;travelmode=walking" target="_blank" rel="noopener">7 Kau Kee → 8 Yat Lok</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Yat+Lok+34+Stanley+Street&amp;destination=13-15+Lan+Fong+Road+Causeway+Bay+Hong+Kong&amp;travelmode=transit" target="_blank" rel="noopener">8 Yat Lok → 9A Goldfinch 옛 주소 · 선택</a><small> MTR·대중교통 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=13-15+Lan+Fong+Road+Causeway+Bay+Hong+Kong&amp;destination=The+Peak+Tower+Hong+Kong&amp;travelmode=driving" target="_blank" rel="noopener">9A Goldfinch 옛 주소 · 선택 → 10 Victoria Peak · Peak Tower</a><small> 택시 이동 참고 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Yat+Lok+34+Stanley+Street&amp;destination=IFC+Mall+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">8 Yat Lok → 9B IFC 휴식 · 대안</a><small> 도보 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=IFC+Mall+Hong+Kong&amp;destination=The+Peak+Tower+Hong+Kong&amp;travelmode=driving" target="_blank" rel="noopener">9B IFC 휴식 · 대안 → 10 Victoria Peak · Peak Tower</a><small> 택시 이동 참고 · 선택 구간</small></li></ul></details><div class="note">9A는 폐업한 금작찬청의 옛 주소 방문 + 코즈웨이베이 휴식입니다. 9B는 이를 생략할 때의 IFC 휴식. 두 곳을 연달아 방문하지 않습니다. 피크 핀은 Peak Tower 기준이며 Lugard Road 전망대는 별도 산책입니다.</div></section>
+<section class="schedule" aria-label="9/25 · 센트럴 골목과 피크 상세 시간표"><h3>하루 동선 한눈에 보기</h3><p class="schedule-intro">시간은 모두 홍콩 현지 시각 · 이동·대기는 계획용 예상치</p><div class="schedule-list"><div class="schedule-row"><div class="schedule-time">08:15–08:30</div><div><span class="schedule-kind">이동</span><strong>호텔 → 근처 차찬탱</strong><p>아침에는 멀리 이동하지 않기</p></div></div><div class="schedule-row"><div class="schedule-time">08:30–09:05</div><div><span class="schedule-kind">식사</span><strong>가벼운 차찬탱 아침</strong><p>번·음료 중심, 점심 두 곳을 고려해 소량</p></div></div><div class="schedule-row"><div class="schedule-time">09:05–09:30</div><div><span class="schedule-kind">이동</span><strong>차찬탱 → 침사추이 스타페리 선착장</strong><p>도보·화장실 포함</p></div></div><div class="schedule-row"><div class="schedule-time">09:30–10:00</div><div><span class="schedule-kind">이동</span><strong>스타페리 대기·승선 → 센트럴</strong><p>정해진 출항편이 아닌 대기 포함 계획 시간</p></div></div><div class="schedule-row"><div class="schedule-time">10:00–10:20</div><div><span class="schedule-kind">이동</span><strong>센트럴 선착장 → Graham Street</strong><p>도보 약 20분 계획; 더우면 택시</p></div></div><div class="schedule-row"><div class="schedule-time">10:20–10:40</div><div><span class="schedule-kind">관광</span><strong>Graham Street Market</strong><p>노점·골목 사진 위주</p></div></div><div class="schedule-row"><div class="schedule-time">10:40–10:50</div><div><span class="schedule-kind">이동</span><strong>시장 → 미드레벨 에스컬레이터</strong><p>주변 골목을 통해 이동</p></div></div><div class="schedule-row"><div class="schedule-time">10:50–11:10</div><div><span class="schedule-kind">관광</span><strong>미드레벨 에스컬레이터·SoHo</strong><p>일부 구간만 탑승. 상행 운행 시작 후 방문</p></div></div><div class="schedule-row"><div class="schedule-time">11:10–11:20</div><div><span class="schedule-kind">이동</span><strong>SoHo → Tai Cheong Bakery</strong><p>Lyndhurst Terrace 방향</p></div></div><div class="schedule-row"><div class="schedule-time">11:20–11:40</div><div><span class="schedule-kind">간식</span><strong>에그타르트 구매·맛보기</strong><p>줄서기 포함 20분, 4명이 2~3개 공유</p></div></div><div class="schedule-row"><div class="schedule-time">11:40–11:50</div><div><span class="schedule-kind">이동</span><strong>베이커리 → Lan Kwai Fong</strong><p>도보 이동</p></div></div><div class="schedule-row"><div class="schedule-time">11:50–12:05</div><div><span class="schedule-kind">관광</span><strong>Lan Kwai Fong 골목</strong><p>표지판·거리 사진 15분</p></div></div><div class="schedule-row"><div class="schedule-time">12:05–12:20</div><div><span class="schedule-kind">이동</span><strong>Lan Kwai Fong → Kau Kee</strong><p>Gough Street 방향 도보</p></div></div><div class="schedule-row"><div class="schedule-time">12:20–12:30</div><div><span class="schedule-kind">대기</span><strong>Kau Kee 대기</strong><p>10분은 목표치; 30분 이상이면 뒤 간식·산책 축소</p></div></div><div class="schedule-row"><div class="schedule-time">12:30–13:10</div><div><span class="schedule-kind">식사</span><strong>Kau Kee 고기국수</strong><p>소량 주문·공유 가능 여부는 매장에 확인</p></div></div><div class="schedule-row"><div class="schedule-time">13:10–13:30</div><div><span class="schedule-kind">이동</span><strong>식후 천천히 걷기·카페 이동</strong><p>추가 관광지 없이 센트럴 안에서 이동</p></div></div><div class="schedule-row"><div class="schedule-time">13:30–14:10</div><div><span class="schedule-kind">휴식</span><strong>앉아서 쉬기·화장실</strong><p>음료 중심, 추가 음식은 생략 가능</p></div></div><div class="schedule-row"><div class="schedule-time">14:10–14:30</div><div><span class="schedule-kind">대기</span><strong>Yat Lok 이동·입장 대기</strong><p>이동 10분 + 대기 10분 계획</p></div></div><div class="schedule-row"><div class="schedule-time">14:30–15:15</div><div><span class="schedule-kind">식사</span><strong>Yat Lok 거위구이</strong><p>배부르면 포장·생략 중 선택; 두 끼를 무리하게 채우지 않기</p></div></div><div class="schedule-row"><div class="schedule-time">15:15–15:50</div><div><span class="schedule-kind">이동</span><strong>센트럴 → 코즈웨이베이</strong><p>화양연화 코스 선택 시: MTR·도보 포함 35분 예상. 옛 주소는 Lan Fong Road 13–15.</p></div></div><div class="schedule-row"><div class="schedule-time">15:50–16:05</div><div><span class="schedule-kind">영화</span><strong>Goldfinch Restaurant · 금작찬청 옛 주소</strong><p>실제 촬영지의 옛 주소를 15분 둘러보기. 원래 식당은 폐업했으며 실내 관람·식사 일정이 아님.</p></div></div><div class="schedule-row"><div class="schedule-time">16:05–16:50</div><div><span class="schedule-kind">휴식</span><strong>코즈웨이베이 카페·실내 휴식</strong><p>45분 앉아서 쉬기. 옛 식당과 별개인 주변 카페를 당일 선택.</p></div></div><div class="schedule-row"><div class="schedule-time">16:50–17:30</div><div><span class="schedule-kind">이동</span><strong>코즈웨이베이 → 빅토리아 피크</strong><p>택시 대기·이동 포함 40분 계획. 정체 시 전망 시작이 늦어질 수 있음.</p></div></div><div class="schedule-row"><div class="schedule-time">17:30–18:00</div><div><span class="schedule-kind">관광</span><strong>피크 도착·전망 구역 이동</strong><p>도착 후 화장실·전망 위치 잡기</p></div></div><div class="schedule-row"><div class="schedule-time">18:00–19:00</div><div><span class="schedule-kind">관광</span><strong>해 질 무렵 → 야경</strong><p>정확한 일몰·시야는 당일 확인. Lugard Road는 체력 좋을 때만</p></div></div><div class="schedule-row"><div class="schedule-time">19:00–19:20</div><div><span class="schedule-kind">휴식</span><strong>피크 실내 휴식·하산 준비</strong><p>하산 대기 전 앉아서 쉬기</p></div></div><div class="schedule-row"><div class="schedule-time">19:20–20:05</div><div><span class="schedule-kind">이동</span><strong>피크 → 센트럴</strong><p>택시 대기·이동에 45분 배정</p></div></div><div class="schedule-row"><div class="schedule-time">20:05–20:30</div><div><span class="schedule-kind">이동</span><strong>센트럴 → 침사추이</strong><p>MTR 기준 계획; 식당까지 이동 포함</p></div></div><div class="schedule-row"><div class="schedule-time">20:30–21:15</div><div><span class="schedule-kind">식사</span><strong>숙소 근처 가벼운 저녁</strong><p>채소·두부·면. 배부르면 간단히 축소</p></div></div><div class="schedule-row"><div class="schedule-time">21:15–21:30</div><div><span class="schedule-kind">이동</span><strong>식당 → 호텔</strong><p>이후 휴식</p></div></div></div><div class="note">15:15~17:30은 화양연화 옛 촬영지 코스를 넣은 시간표입니다. 생략할 때는 기존대로 15:15~15:40 IFC 이동 → 15:40~16:50 휴식 → 16:50~17:30 택시로 피크 이동. 두 코스를 연달아 하지 않습니다. 식당 대기가 길거나 피곤하면 촬영지 방문을 생략하고 피크 전 휴식을 최소 45분 남기세요. 트램을 우선하면 촬영지 코스를 생략하고 대기 시간을 별도로 확보하세요.</div></section>
+    <div class="timeline">
+      <div class="stop highlight">
+        <div class="time">08:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>☕ 차찬탱 아침</h3>
+            <p>숙소 근처에서 홍콩식 아침을 가볍게 시작합니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.cn/content/dam/dhk/intl/explore/dining/cha-chaan-tengs-to-visit-in-hong-kong/kam-wah-cafe-960x720.jpg" alt="파인애플번과 홍콩 밀크티">
+              <div>
+                <h4>파인애플번 + 버터 · 밀크티</h4>
+                <p>파인애플이 들어가는 빵이 아니라, 겉면의 바삭한 쿠키 크러스트 모양에서 이름이 붙은 홍콩식 번. 차갑고 두꺼운 버터를 끼워 먹는 조합이 대표적입니다.</p>
+                <p class="order">추천 주문: 번 2~3개 + 밀크티/레몬티</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">09:30</div>
+        <article class="card"><div class="card-body">
+          <h3>🎬 스타페리 → Graham Street → 미드레벨 에스컬레이터 → 소호</h3>
+          <p>침사추이에서 스타페리로 센트럴에 들어간 뒤, 기존 동선을 거의 바꾸지 않고 <b>중경삼림 촬영지 3곳</b>을 이어서 지나갑니다. 오르막은 에스컬레이터를 적극 활용합니다.</p>
+          <div class="movie">
+            <b>중경삼림 포인트</b><br>
+            ① Graham Street Market — 경찰 663 관련 거리 장면<br>
+            ② Central–Mid-Levels Escalator — 영화 2부의 대표적인 공간<br>
+            ③ Lan Kwai Fong — 영화 속 Midnight Express가 있던 지역. 현재 원래 가게는 남아 있지 않아 장소 분위기만 확인
+          </div>
+          <div class="meta"><span class="chip">스타페리</span><span class="chip">중경삼림</span><span class="chip">미드레벨</span><span class="chip">SoHo</span></div>
+        <div class="photo-gallery sight-gallery"><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/g/graham-street-market/graham-street-market-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/g/graham-street-market/graham-street-market-01.jpg" alt="Graham Street Market 실제 장소 사진" decoding="async"></a><div class="caption"><b>Graham Street Market</b><br>채소 가게와 노점이 이어지는 센트럴의 생활 시장. 붐비는 구간은 짧게 지나갑니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-graham-street-market.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/c/central-mid-levels-escalator/central-mid-levels-escalators-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/c/central-mid-levels-escalator/central-mid-levels-escalators-01.jpg" alt="Central–Mid-Levels Escalator 실제 장소 사진" decoding="async"></a><div class="caption"><b>Central–Mid-Levels Escalator</b><br>거리 사이로 이어지는 지붕 있는 에스컬레이터. 상행 운행은 10:20부터이며 피크까지 연결되지는 않습니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-central-mid-levels-escalator.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/lan-kwai-fong/lan-kwai-fong-02.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/lan-kwai-fong/lan-kwai-fong-02.jpg" alt="Lan Kwai Fong 실제 장소 사진" decoding="async"></a><div class="caption"><b>Lan Kwai Fong</b><br>이름이 적힌 표지판과 주변 골목을 가볍게 봅니다. 이번 일정은 낮 방문으로 밤의 유흥가 분위기와 다릅니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-lan-kwai-fong.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div></div></div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">11:20</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🥧 Tai Cheong Bakery 泰昌餅家 · 에그타르트</h3>
+            <p>중경삼림 촬영지 동선과 바로 붙는 Central의 클래식 에그타르트 가게. 정식 식사가 아니라 <b>4명이 2~3개만 나눠 먹는 간식</b>으로 넣습니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://thingstodoinhk.com/assets/images/uploads/images/CW067-1.jpg" alt="Tai Cheong Bakery Central 실제 에그타르트">
+              <div>
+                <h4>Tai Cheong Bakery · 실제 에그타르트</h4>
+                <p>부드러운 커스터드와 버터 향이 나는 타르트지가 특징. 고기국수와 거위구이 사이에 부담 없이 넣기 좋습니다.</p>
+                <p class="order">추천 주문: 에그타르트 2~3개 공유</p>
+              </div>
+            </div>
+            <div class="note">35 Lyndhurst Terrace, Central. Graham Street·미드레벨 에스컬레이터와 한 동선에 있어 우회가 거의 없습니다.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">12:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🍜 Kau Kee 九記牛腩 · 고기국수</h3>
+            <p>육식맨 영상에 나온 고기국수집 중 이번 여행에서는 <b>카우키 한 곳만</b> 선택. Gough Street에 있어 중경삼림 센트럴 촬영지 동선 뒤에 자연스럽게 연결됩니다.</p>
+            <div class="photo-gallery">
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://thingstodoinhk.com/assets/images/uploads/images/Kau-Kee-Beef-Brisket-Flat-Noodle-compressor.png" alt="Kau Kee 맑은 양지 쌀국수 실제 사진">
+                <div class="caption"><b>맑은 양지 쌀국수</b><br>카우키의 기본형. 맑지만 소고기 풍미가 진한 육수.<div class="photo-source">실제 Kau Kee 메뉴 사진 · Things to do in HK</div></div>
+              </div>
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://thingstodoinhk.com/assets/images/uploads/images/Kau-Kee-Beef-Tendon-Curry-Noodle-compressor.jpg" alt="Kau Kee 커리 양지 도가니 국수 실제 사진">
+                <div class="caption"><b>커리 양지·도가니 이면</b><br>육식맨 영상에서도 먹은 조합. 향신료와 도가니의 진한 맛이 핵심.<div class="photo-source">실제 Kau Kee 메뉴 사진 · Things to do in HK</div></div>
+              </div>
+            </div>
+            <p class="order">추천 주문: 맑은 양지 1 + 커리 양지·도가니 1 → 4명이 공유</p>
+            <div class="note">현재 확인되는 주소는 21 Gough Street. 월~토 영업, 일요일/공휴일 휴무로 안내되는 곳이 많습니다. 여행 직전 영업 여부 재확인 권장.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">14:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🦆 Yat Lok 一樂燒鵝 · 거위구이</h3>
+            <p>카우키에서는 국수를 조금만 맛보고, 메인 점심은 <b>센트럴 Stanley Street의 Yat Lok</b>으로 잡습니다. 홍콩에서 한 번은 제대로 먹을 가치가 있는 광동식 로스트 거위를 메인으로 둡니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/y/yat-lok-restaurant/yat-lok-restaurant-03.jpg" alt="Yat Lok 실제 로스트 구스 덮밥">
+              <div>
+                <h4>Yat Lok 실제 로스트 구스</h4>
+                <p>홍콩관광청의 Yat Lok 실제 음식 사진. 윤기 있는 얇은 껍질과 촉촉한 살이 특징이며, 미쉐린 가이드도 1/4마리와 라이펀 조합을 권합니다.</p>
+                <p class="order">추천 주문: 거위 1/4 + 차슈 + 청경채류 + 밥/라이펀 1~2</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+<div class="stop">
+        <div class="time">15:15</div>
+        <article class="card"><div class="card-body">
+          <h3>🎬 화양연화 · Goldfinch Restaurant 金雀餐廳 옛 주소</h3>
+          <p><b>코즈웨이베이 · 13–15 Lan Fong Road</b><br>주모운(양조위)과 소려진(장만옥)이 마주 앉는 레스토랑 장면의 실제 촬영지입니다. 《2046》에도 등장합니다. 센트럴에서 코즈웨이베이로 이동해 옛 주소를 잠깐 둘러보는 <b>영화 팬을 위한 선택 코스</b>로 추가했습니다.</p>
+          <div class="meta"><span class="chip">화양연화 실제 촬영지</span><span class="chip">원래 식당 폐업</span><span class="chip">옛 주소 방문 15분</span><span class="chip">IFC 구간 대체</span></div>
+          <div class="photo-gallery"><div class="photo-card">
+            <a href="https://www.hongkongnavi.com/miru/111/" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://imagel.sekainavi.com/hongkong/common/goods_album/200910/Goods_Album_244187_111_sum640_1254922652.JPG" alt="금작찬청 Goldfinch Restaurant 폐업 전 외관 기록 사진 — 현재 모습 아님"></a>
+            <div class="caption"><b>금작찬청의 과거 외관 · 기록 사진</b><br>폐업 전 식당 사진입니다. 현재 간판·점포·내부 모습이 보존되어 있다는 뜻이 아닙니다.<div class="photo-source"><a href="https://www.hongkongnavi.com/miru/111/" target="_blank" rel="noopener">사진 출처: Hong Kong Navi · Lan Fong Road 소개</a></div></div>
+          </div></div>
+          <div class="movie"><b>영화 속 홍콩과 실제 촬영지를 구분하기</b><br>《화양연화》는 1960년대 홍콩을 배경으로 하지만, 상당 부분을 방콕에서 촬영했습니다. 이번에는 홍콩 내 촬영이 확인되는 금작찬청의 옛 주소만 넣었습니다. 영화 속 골목·계단을 홍콩의 다른 장소로 임의 지정하지 않았습니다.</div>
+          <div class="note"><b>방문 전에 알아둘 점</b> · 원래 금작찬청은 2018년 폐업한 것으로 보도되었습니다. 영화 속 좌석에서 식사하거나 실내를 관람할 수 있는 장소로 안내하지 않습니다. 현재 해당 주소의 점포·외관 상태는 확인되지 않았으므로, 현장에서는 공공 보도에서 옛 위치만 확인합니다.<br><b>가족 동선</b> · 15:15 센트럴 출발 → 15:50 옛 주소 → 16:05 카페 휴식 → 16:50 택시로 피크 출발. 이동에 대략 30~45분의 추가 부담이 있어, 식사 대기가 길거나 피곤하면 기존 IFC 휴식 코스로 돌아가세요.</div>
+          <p class="photo-source" style="margin-top:14px">촬영지 참고: <a href="https://www.tatlerasia.com/lifestyle/entertainment/hong-kong-wong-kar-wai-movie-location" target="_blank" rel="noopener">Tatler Asia</a> · 폐업 보도: <a href="https://www.goldthread2.com/culture/wong-kar-wai-mood-love-was-supposed-be-movie-about-food/article/3088012" target="_blank" rel="noopener">Goldthread</a> · <a href="https://www.google.com/maps/search/?api=1&amp;query=13-15+Lan+Fong+Road+Causeway+Bay+Hong+Kong" target="_blank" rel="noopener">옛 주소 지도</a><br>확인일 2026.09.15 · 이동시간은 계획용 예상치</p>
+        </div></article>
+      </div>
+
+      <div class="stop">
+        <div class="time">17:30</div>
+        <article class="card"><div class="card-body">
+          <h3>빅토리아 피크 · 낮 → 일몰 → 야경</h3>
+          <p>해지기 전에 올라가 세 가지 분위기를 한 번에 봅니다. 내려올 때는 부모님 컨디션에 따라 택시 활용.</p>
+        <div class="photo-gallery sight-gallery"><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/lugard-road-lookout/lugard-road-lookout-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/lugard-road-lookout/lugard-road-lookout-01.jpg" alt="Victoria Peak · 빅토리아 피크 실제 장소 사진" decoding="async"></a><div class="caption"><b>Victoria Peak · 빅토리아 피크</b><br>사진은 피크의 Lugard Road Lookout에서 본 전망입니다. 해당 전망대까지는 별도 도보 이동이 필요하므로 당일 체력에 따라 선택합니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-lugard-road-lookout.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div></div></div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">20:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🥢 가벼운 광동식 저녁</h3>
+            <p>낮에 고기 메뉴가 집중되었으므로 저녁은 채소·두부·볶음면이나 가벼운 해산물 위주로 마무리합니다.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="d3" class="day">
+    <div class="day-head">
+      <h2>Day 3 · 몽콕 → 야우마테이 → 침사추이</h2>
+      <p>새벽 1시 비행기라 토요일을 거의 온전히 사용</p>
+    </div>
+    <section class="route-section" aria-label="날짜별 동선 지도"><h3>🗺️ 지도에서 동선 보기</h3><p>몽콕 → 야우마테이 → 조던 → 침사추이로 남하합니다. 쿠키 구매 후 휴식하고 저녁·공항 이동으로 이어집니다.</p><p class="map-help">번호는 방문 순서 · 실선은 기본 동선 · 점선은 선택·미확정 구간<br>핀은 대략적인 위치, 연결선은 순서 안내입니다. 실제 도로·페리 항로·도보 경로는 아래 길찾기에서 확인하세요.</p><button type="button" class="map-reset" data-map-reset="d3">전체 동선 보기</button><div id="route-d3" class="route-map" aria-label="확대 축소 가능한 동선 지도"></div><p class="map-status" id="status-d3">지도는 인터넷 연결이 필요합니다. 표시되지 않으면 아래 장소·길찾기 링크를 이용하세요.</p><div class="map-stops"><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="0" aria-label="지도에서 Kam Wah Café 보기">1</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Kam+Wah+Cafe+47+Bute+Street">Kam Wah Café</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="1" aria-label="지도에서 몽콕 · Ladies’ Market 보기">2</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Ladies+Market+Tung+Choi+Street">몽콕 · Ladies’ Market</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="2" aria-label="지도에서 야우마테이 · Tin Hau Temple 보기">3</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Tin+Hau+Temple+Yau+Ma+Tei">야우마테이 · Tin Hau Temple</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="3" aria-label="지도에서 Temple Street · 조던 구간 보기">4</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Temple+Street+Night+Market+Hong+Kong">Temple Street · 조던 구간</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="4" aria-label="지도에서 Australia Dairy Company 보기">5</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Australia+Dairy+Company+47+Parkes+Street">Australia Dairy Company</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="5" aria-label="지도에서 Jenny Bakery · 침사추이 보기">6</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Jenny+Bakery+Shop+42+Mirador+Mansion+62+Nathan+Road">Jenny Bakery · 침사추이</a></div><div class="map-stop"><button type="button" class="map-pin-link" data-day="d3" data-index="6" aria-label="지도에서 하버 마지막 산책 보기">7</button><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=Tsim+Sha+Tsui+Promenade+Hong+Kong">하버 마지막 산책</a></div></div><details class="map-directions"><summary>구간별 실제 길찾기 열기</summary><ul><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Kam+Wah+Cafe+47+Bute+Street&amp;destination=Ladies+Market+Tung+Choi+Street&amp;travelmode=walking" target="_blank" rel="noopener">1 Kam Wah Café → 2 몽콕 · Ladies’ Market</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Ladies+Market+Tung+Choi+Street&amp;destination=Tin+Hau+Temple+Yau+Ma+Tei&amp;travelmode=walking" target="_blank" rel="noopener">2 몽콕 · Ladies’ Market → 3 야우마테이 · Tin Hau Temple</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Tin+Hau+Temple+Yau+Ma+Tei&amp;destination=Temple+Street+Night+Market+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">3 야우마테이 · Tin Hau Temple → 4 Temple Street · 조던 구간</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Temple+Street+Night+Market+Hong+Kong&amp;destination=Australia+Dairy+Company+47+Parkes+Street&amp;travelmode=walking" target="_blank" rel="noopener">4 Temple Street · 조던 구간 → 5 Australia Dairy Company</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Australia+Dairy+Company+47+Parkes+Street&amp;destination=Jenny+Bakery+Shop+42+Mirador+Mansion+62+Nathan+Road&amp;travelmode=walking" target="_blank" rel="noopener">5 Australia Dairy Company → 6 Jenny Bakery · 침사추이</a><small> 도보</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Jenny+Bakery+Shop+42+Mirador+Mansion+62+Nathan+Road&amp;destination=Tsim+Sha+Tsui+Promenade+Hong+Kong&amp;travelmode=walking" target="_blank" rel="noopener">6 Jenny Bakery · 침사추이 → 7 하버 마지막 산책</a><small> 도보 · 선택 구간</small></li><li><a href="https://www.google.com/maps/dir/?api=1&amp;origin=Tsim+Sha+Tsui+Station+Hong+Kong&amp;destination=Hong+Kong+International+Airport+Terminal+1&amp;travelmode=driving" target="_blank" rel="noopener">침사추이 → 홍콩국제공항</a><small> 택시 경로 참고 · 출발지는 실제 호텔로 변경하세요</small></li></ul></details><div class="note">6→7 사이에는 호텔 인근 휴식과 저녁 식사가 있습니다. 호텔과 마지막 저녁 지점이 미확정이라 이 구간은 점선으로만 연결했습니다. 공항은 시내 지도가 작아지지 않도록 별도 길찾기로 연결합니다.</div></section>
+<section class="schedule" aria-label="9/26 · 몽콕 산책과 귀국 준비 상세 시간표"><h3>하루 동선 한눈에 보기</h3><p class="schedule-intro">시간은 모두 홍콩 현지 시각 · 이동·대기는 계획용 예상치</p><div class="schedule-list"><div class="schedule-row"><div class="schedule-time">08:00–08:30</div><div><span class="schedule-kind">숙소</span><strong>짐 정리·체크아웃·짐 맡기기</strong><p>2박 숙박 기준. 귀중품·여권은 직접 소지</p></div></div><div class="schedule-row"><div class="schedule-time">08:30–09:00</div><div><span class="schedule-kind">이동</span><strong>침사추이 호텔 → Kam Wah Café</strong><p>MTR 또는 택시·도보 포함 30분 예상</p></div></div><div class="schedule-row"><div class="schedule-time">09:00–09:15</div><div><span class="schedule-kind">대기</span><strong>Kam Wah 입장·주문</strong><p>대기가 20분 넘으면 주변 차찬탱 대안</p></div></div><div class="schedule-row"><div class="schedule-time">09:15–10:00</div><div><span class="schedule-kind">식사</span><strong>파인애플번·밀크티 아침</strong><p>여유 있게 먹고 화장실 들르기</p></div></div><div class="schedule-row"><div class="schedule-time">10:00–10:35</div><div><span class="schedule-kind">관광</span><strong>몽콕 거리·상점 구경</strong><p>Ladies’ Market은 준비 중일 수 있어 거리 위주</p></div></div><div class="schedule-row"><div class="schedule-time">10:35–11:00</div><div><span class="schedule-kind">이동</span><strong>몽콕 → 야우마테이</strong><p>도보 약 25분 계획; 더우면 MTR 1정거장</p></div></div><div class="schedule-row"><div class="schedule-time">11:00–11:25</div><div><span class="schedule-kind">관광</span><strong>야우마테이·틴하우 사원 주변</strong><p>사진과 짧은 산책</p></div></div><div class="schedule-row"><div class="schedule-time">11:25–11:45</div><div><span class="schedule-kind">관광</span><strong>Temple Street 낮 골목</strong><p>야시장 방문이 아닌 낮 거리 산책</p></div></div><div class="schedule-row"><div class="schedule-time">11:45–12:10</div><div><span class="schedule-kind">휴식</span><strong>조던 방향 이동·음료·화장실</strong><p>짧은 도보 뒤 앉아서 쉬기</p></div></div><div class="schedule-row"><div class="schedule-time">12:10–12:30</div><div><span class="schedule-kind">대기</span><strong>Australia Dairy Company 이동·대기</strong><p>대기 길면 인근 식당으로 변경</p></div></div><div class="schedule-row"><div class="schedule-time">12:30–13:15</div><div><span class="schedule-kind">식사</span><strong>에그토스트·밀크푸딩</strong><p>아침과 겹치지 않게 주문</p></div></div><div class="schedule-row"><div class="schedule-time">13:15–13:40</div><div><span class="schedule-kind">이동</span><strong>조던 → 침사추이</strong><p>도보 또는 MTR로 이동</p></div></div><div class="schedule-row"><div class="schedule-time">13:40–14:30</div><div><span class="schedule-kind">쇼핑</span><strong>Jenny Bakery 침사추이점 · 쿠키 구매</strong><p>매장 찾기·대기·구매에 50분 배정. 실제 대기시간 보장 아님. 14:30까지 구매가 끝나지 않으면 디저트 생략</p></div></div><div class="schedule-row"><div class="schedule-time">14:30–14:45</div><div><span class="schedule-kind">간식</span><strong>홍콩식 디저트 · 선택</strong><p>제니베이커리 구매가 빨리 끝나고 가까운 가게에 바로 앉을 수 있을 때만</p></div></div><div class="schedule-row"><div class="schedule-time">14:45–15:00</div><div><span class="schedule-kind">이동</span><strong>호텔 인근 휴식 장소로 이동</strong><p>쿠키는 호텔에 짐과 함께 추가 보관 가능한지 확인. 불가하면 휴식 장소까지 직접 소지</p></div></div><div class="schedule-row"><div class="schedule-time">15:00–16:30</div><div><span class="schedule-kind">휴식</span><strong>카페·라운지에서 충분히 휴식</strong><p>객실 이용은 보장되지 않음. 샤워는 레이트 체크아웃·데이룸 확보 시만</p></div></div><div class="schedule-row"><div class="schedule-time">16:30–17:00</div><div><span class="schedule-kind">숙소</span><strong>짐 확인·짐 재정리·외출 준비</strong><p>저녁 동안 짐 재보관 가능한지 확인</p></div></div><div class="schedule-row"><div class="schedule-time">17:00–17:30</div><div><span class="schedule-kind">이동</span><strong>호텔 → 마지막 저녁 식당</strong><p>예약 확인·착석 여유 포함</p></div></div><div class="schedule-row"><div class="schedule-time">17:30–19:00</div><div><span class="schedule-kind">식사</span><strong>Lei Garden / Ho Choi 가족식</strong><p>식사 90분. 늦어지면 마지막 산책 축소</p></div></div><div class="schedule-row"><div class="schedule-time">19:00–19:30</div><div><span class="schedule-kind">이동</span><strong>식당 → 하버</strong><p>화장실·산책로 이동</p></div></div><div class="schedule-row"><div class="schedule-time">19:30–20:00</div><div><span class="schedule-kind">관광</span><strong>하버 마지막 산책</strong><p>20시에 마무리하고 짐 찾으러 이동</p></div></div><div class="schedule-row"><div class="schedule-time">20:00–20:30</div><div><span class="schedule-kind">이동</span><strong>하버 → 호텔·짐 수령</strong><p>여권·휴대폰·탑승 정보 최종 확인</p></div></div><div class="schedule-row"><div class="schedule-time">20:30–21:00</div><div><span class="schedule-kind">여유</span><strong>공항 차량 탑승 준비</strong><p>차량을 잡는 대기 여유. 준비되면 21시를 기다리지 않고 출발</p></div></div><div class="schedule-row"><div class="schedule-time">21:00–22:00</div><div><span class="schedule-kind">이동</span><strong>호텔 → 홍콩국제공항</strong><p>택시 기준 약 1시간 계획. 짐 4개면 차량 수·적재량 확인</p></div></div><div class="schedule-row"><div class="schedule-time">22:00–23:00</div><div><span class="schedule-kind">공항</span><strong>항공사 수속·수하물·보안검색·출국</strong><p>항공사 마감시간과 터미널은 예약 내역 기준</p></div></div><div class="schedule-row"><div class="schedule-time">23:00–23:45</div><div><span class="schedule-kind">휴식</span><strong>탑승구 확인·물·화장실·휴식</strong><p>이동 거리가 길면 탑승구 근처에서 대기</p></div></div><div class="schedule-row"><div class="schedule-time">23:45–00:15</div><div><span class="schedule-kind">공항</span><strong>탑승구 이동·대기</strong><p>이 구간부터 9/27로 날짜가 넘어갑니다</p></div></div><div class="schedule-row"><div class="schedule-time">00:15–01:00</div><div><span class="schedule-kind">탑승</span><strong>실제 안내에 맞춰 탑승 → 01:00 출발</strong><p>00:15는 준비용 목표이며 확정 탑승시각이 아님</p></div></div></div><div class="note">귀국편은 9/27 01:00 출발입니다. 9/26 밤 공항으로 이동합니다. 마지막 날 객실이 없다면 샤워 일정은 제외하고 카페·라운지 휴식으로 운영하세요.</div></section>
+    <div class="timeline">
+      <div class="stop highlight">
+        <div class="time">09:00</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🍞 Kam Wah Café 金華冰廳 · 몽콕 차찬탱</h3>
+            <p>토요일 아침은 <b>Kam Wah Café</b>를 1순위로. 파인애플번으로 특히 유명해 몽콕 일정의 시작점으로 쓰기 좋습니다. 대기가 너무 길면 인근 차찬탱으로 즉시 대체합니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/k/kam-wah-cafe/kam-wah-cafe-01.jpg" alt="Kam Wah Cafe 실제 파인애플번과 밀크티">
+              <div>
+                <h4>Kam Wah Café 실제 파인애플번 + 밀크티</h4>
+                <p>홍콩관광청에 소개된 실제 Kam Wah 메뉴. 두꺼운 버터를 끼운 보로야우와 홍콩식 밀크티가 대표 조합입니다.</p>
+                <p class="order">추천 주문: 빵 2~3 + 토스트 1 + 음료</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">10:00</div>
+        <article class="card"><div class="card-body">
+          <h3>몽콕 → 야우마테이 산책</h3>
+          <p>시장·거리 풍경 위주. 날씨가 덥거나 습하면 쇼핑몰과 카페를 중간중간 섞습니다.</p>
+        <div class="photo-gallery sight-gallery"><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/ladies-market/ladies-market-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/l/ladies-market/ladies-market-01.jpg" alt="Mong Kok · 몽콕 실제 장소 사진" decoding="async"></a><div class="caption"><b>Mong Kok · 몽콕</b><br>사진은 몽콕의 Ladies’ Market. 오전에는 노점이 아직 준비 중일 수 있어 주변 상점과 거리 위주로 봅니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-ladies-market.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/t/temple-street-night-market/highlight-exp/tin-hau-temple-960x720-02.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/t/temple-street-night-market/highlight-exp/tin-hau-temple-960x720-02.jpg" alt="Yau Ma Tei · 틴하우 사원 실제 장소 사진" decoding="async"></a><div class="caption"><b>Yau Ma Tei · 틴하우 사원</b><br>야우마테이의 사원과 골목을 지나 조던으로 내려오는 동선. 더우면 중간에 쉬어갑니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-tin-hau-temple-at-yau-ma-tei.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div><div class="photo-card"><a href="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/t/temple-street-night-market/temple-street-night-market-01.jpg" target="_blank" rel="noopener"><img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/t/temple-street-night-market/temple-street-night-market-01.jpg" alt="Temple Street · 템플 스트리트 실제 장소 사진" decoding="async"></a><div class="caption"><b>Temple Street · 템플 스트리트</b><br>사진은 밤의 모습입니다. 현재 일정은 낮 산책이므로 활기찬 야시장 풍경과는 다릅니다.<div class="photo-source"><a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-temple-street-night-market.html" target="_blank" rel="noopener">사진·장소 출처: 홍콩관광청</a></div></div></div></div></div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">12:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🍳 Australia Dairy Company 澳洲牛奶公司 · 조던</h3>
+            <p>몽콕 → 야우마테이 → 조던으로 내려오는 길에 자연스럽게 붙는 유명 차찬탱. 아침 Kam Wah와 메뉴가 겹치지 않도록 <b>스크램블에그·토스트·밀크푸딩</b> 위주로 주문합니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/australia-dairy-company/australia-dairy-company-01.jpg" alt="Australia Dairy Company 실제 에그 샌드위치">
+              <div>
+                <h4>Australia Dairy Company 실제 에그 샌드위치</h4>
+                <p>홍콩관광청의 실제 메뉴 사진. 폭신하고 촉촉한 스크램블에그와 두꺼운 식빵 조합이 대표적이고, 마카로니 수프와 우유 디저트를 같이 먹는 패턴이 유명합니다.</p>
+                <p class="order">추천 주문: 스크램블에그 토스트 2 + 마카로니 수프 1 + 밀크푸딩 2 공유</p>
+              </div>
+            </div>
+            <div class="photo-gallery">
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://www.discoverhongkong.com/content/dam/dhk/data/poi/media/a/australia-dairy-company/australia-dairy-company-01.jpg" alt="Australia Dairy Company 에그 샌드위치">
+                <div class="caption"><b>에그 샌드위치</b><br>부드러운 스크램블에그와 햄을 두꺼운 식빵에 넣은 대표 메뉴.<div class="photo-source">실제 메뉴 사진 · Hong Kong Tourism Board</div></div>
+              </div>
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://resource02.ulifestyle.com.hk/ublog/post/w960/202009/1600490302_b3bb43fd-ccb4-4023-8fb7-b7efc9c74bd5.jpeg" alt="Australia Dairy Company 스크램블에그 토스트와 마카로니 수프">
+                <div class="caption"><b>스크램블에그 + 토스트 + 마카로니 수프</b><br>가게에서 많이 먹는 전형적인 세트 구성.<div class="photo-source">실제 방문 음식 사진 · U Lifestyle</div></div>
+              </div>
+            </div>
+            <div class="note">47 Parkes Street, Jordan. 토요일 동선에 추가 이동이 거의 없습니다.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">13:40</div>
+        <article class="card"><div class="card-body">
+          <h3>🍪 Jenny Bakery 珍妮曲奇 · 침사추이 쿠키 쇼핑</h3>
+          <p>조던에서 침사추이로 내려온 뒤 <b>제니베이커리 침사추이점</b>에서 선물용 쿠키를 구입합니다. 식사하는 카페가 아니라 쿠키를 사가는 매장으로 잡고, 구매 후 호텔 인근에서 쉬는 동선입니다.</p>
+          <div class="food"><img referrerpolicy="no-referrer" src="https://jennybakery.com/wp-content/uploads/2024/01/20240130_JB_22.webp" alt="Jenny Bakery 공식 4 Mix Butter Cookies 제품 사진"><div>
+            <h4>추천 · 4 Mix Butter Cookies</h4>
+            <p>버터·커피·쇼트브레드·레이즌 오트 4종. 처음 사면 여러 맛을 비교하기 좋은 구성입니다. 공식 게시 가격은 <b>320g HK$80 / 640g HK$150</b>이며, 구매 시 현장 가격과 재고를 확인하세요.</p>
+            <p class="order">구매 예시: 가족용 큰 틴 1개 + 선물용 작은 틴 2개 = HK$310 (쿠키 무게 합계 1.28kg, 포장 무게 별도)</p>
+            <div class="photo-source"><a href="https://jennybakery.com/cookies/" target="_blank" rel="noopener">실제 제품 사진·종류·게시 가격: Jenny Bakery 공식</a> · 틴 디자인은 사진과 다를 수 있음</div>
+          </div></div>
+          <div class="meta"><span class="chip">13:40–14:30 · 대기 포함</span><span class="chip">선물 쇼핑</span><span class="chip">침사추이 MTR D 출구</span></div>
+          <div class="note"><b>매장</b> · Shop 42, 1/F, Mirador Mansion, 62 Nathan Road, Tsim Sha Tsui. 건물 안 1층(홍콩 층수 표기)의 42호 매장을 찾아가세요.<br><b>영업 안내</b> · 공식 지점 페이지 기준 10:00–19:00 / +852 2311 8070. 품절 시 조기 마감하며 명절에는 구매 수량 제한이 있을 수 있습니다. 9/26은 연휴이므로 오후 재고는 보장되지 않습니다.<br><b>시간 조정</b> · 대기가 길면 디저트를 생략하고, 14:45에는 이동을 시작해 15시 휴식을 지킵니다. 쿠키가 꼭 필요하면 9/24 침사추이 산책 중 매장 상황을 먼저 확인해 구입을 앞당길 수 있습니다.<br><b>구매 팁</b> · 현금을 준비하고 당일 결제수단을 확인하세요. 공식 매장 안에서 구매하고, 틴은 눌리거나 흔들리지 않게 포장합니다.</div>
+          <p class="photo-source" style="margin-top:12px"><a href="https://jennybakery.com/ko/hongkong/" target="_blank" rel="noopener">공식 지점 안내</a> · <a href="https://jennybakery.co/zh-hans/hongkong/" target="_blank" rel="noopener">품절·명절 구매 안내</a> · <a href="https://www.google.com/maps/search/?api=1&amp;query=Jenny+Bakery+Shop+42+Mirador+Mansion+62+Nathan+Road" target="_blank" rel="noopener">매장 지도</a><br>확인일: 2026.09.15</p>
+        </div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">14:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🥭 홍콩식 디저트 · 시간 여유가 있을 때</h3>
+            <p>제니베이커리 구매가 끝난 뒤 가까운 가게에서 망고 디저트나 두부푸딩을 맛봅니다. 대기가 있으면 생략하고 15시 휴식을 우선합니다.</p>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://www.phasechangeskitchen.com/wp-content/uploads/2019/09/IMG_0650.jpeg" alt="망고 푸딩" onerror="this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=80'">
+              <div>
+                <h4>망고 푸딩 · 두부푸딩</h4>
+                <p>고기와 면이 많은 홍콩 여행에서 중간에 입맛을 환기해주는 메뉴. 4명이 2~3개 정도 나눠도 충분합니다.</p>
+                <p class="order">추천: 망고 계열 1 + 두부푸딩 1</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">15:00</div>
+        <article class="card"><div class="card-body">
+          <h3>호텔 인근 휴식 · 짐 정리</h3>
+          <p>체크아웃 후에는 카페·라운지에서 90분 쉬는 것을 기본으로 잡습니다. 객실 샤워·휴식은 레이트 체크아웃이나 데이룸을 별도로 확보한 경우에만 가능합니다.</p>
+        </div></article>
+      </div>
+
+      <div class="stop highlight">
+        <div class="time">17:30</div>
+        <article class="card">
+          <div class="card-body">
+            <h3>🦐 마지막 만찬 후보 · 광동식 가족식</h3>
+            <p>마지막 저녁은 아직 한 곳으로 고정하지 않고 <b>침사추이권 2곳을 후보</b>로 둡니다. 둘 다 부모님과 앉아서 먹기 좋은 광동식 레스토랑이고, 예약 가능 시간·좌석 편의성·당일 컨디션으로 최종 선택합니다.</p>
+            <div class="photo-gallery">
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://static.wixstatic.com/media/8d4a0f_a7898e8354114893874db4c5aca66b5c~mv2.jpg/v1/fill/w_890,h_594,al_c,q_85/8d4a0f_a7898e8354114893874db4c5aca66b5c~mv2.jpg" alt="Lei Garden Tsim Sha Tsui East 실제 북경오리">
+                <div class="caption"><b>후보 A · Lei Garden 利苑酒家</b><br>Tsim Sha Tsui East. 광동식 해산물·수프·북경오리까지 가족식 선택 폭이 넓음.<div class="photo-source">실제 TST East 지점 방문 음식 사진</div></div>
+              </div>
+              <div class="photo-card">
+                <img referrerpolicy="no-referrer" src="https://media-cdn.tripadvisor.com/media/photo-s/0d/58/4a/f2/lobster.jpg" alt="Ho Choi Seafood Restaurant 해산물 요리" onerror="this.src='https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/c4/65/2d/ho-choi-seafood-restaurant.jpg?w=1000&h=-1&s=1'">
+                <div class="caption"><b>후보 B · Ho Choi Seafood Restaurant</b><br>Mody Road 인근. 해산물 중심으로 여러 접시 나눠 먹기 좋은 전형적인 광동식 해산물 레스토랑.<div class="photo-source">실제 방문자 음식 사진 · Tripadvisor</div></div>
+              </div>
+            </div>
+            <div class="food">
+              <img referrerpolicy="no-referrer" src="https://static.wixstatic.com/media/8d4a0f_a7898e8354114893874db4c5aca66b5c~mv2.jpg/v1/fill/w_890,h_594,al_c,q_85/8d4a0f_a7898e8354114893874db4c5aca66b5c~mv2.jpg" alt="Lei Garden Tsim Sha Tsui East 실제 음식">
+              <div>
+                <h4>후보 비교 후 최종 주문</h4>
+                <p><b>Lei Garden</b>을 우선 후보, <b>Ho Choi Seafood Restaurant</b>을 대안으로 둡니다. 마지막 날에는 특정 메뉴보다 생선/해산물 2종 + 채소 + 볶음밥처럼 다양하게 나누는 방향.</p>
+                <p class="order">추천 주문: 생선 1 + 새우/조개 1 + 채소 1 + 볶음밥 1</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stop">
+        <div class="time">19:30</div>
+        <article class="card"><div class="card-body">
+          <h3>빅토리아 하버 마지막 산책</h3>
+          <p>야경을 짧게 보고 숙소에서 짐을 찾습니다. 마지막 날은 쇼핑보다 공항 이동 여유를 우선.</p>
+        </div></article>
+      </div>
+
+      <div class="stop">
+        <div class="time">21:00</div>
+        <article class="card"><div class="card-body">
+          <h3>호텔 → 홍콩국제공항</h3>
+          <p>21시 전후 출발, 22시 전후 공항 도착을 목표로 잡습니다. 교통 상황과 체크인 마감시간에 따라 20~30분 앞당겨도 좋습니다.</p>
+        </div></article>
+      </div>
+    </div>
+
+    <div class="flight">
+      <strong>✈️ 9/27 일요일 01:00 출발</strong>
+      <span>토요일 밤 공항 이동 · 여행 종료</span>
+    </div>
+  </section>
+
+  <details class="sources">
+    <summary>사진 및 참고 출처</summary><p>v5 시간표 참고: <a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-central-mid-levels-escalator.html">미드레벨 운행 방향</a> · <a href="https://www.discoverhongkong.com/eng/place-to-go/travel.guide-temple-street-night-market.html">템플 스트리트 안내</a>. 각 이동시간은 실시간 교통·확정 시간표가 아닌 계획용 추정입니다.</p><p>v4에 추가한 실제 사진과 식당 정보의 출처는 각 카드에 연결했습니다. 외부 사진은 인터넷 연결이 필요합니다.</p>
+    <ul>
+      <li>차찬탱/파인애플번 사진: Hong Kong Tourism Board · Kam Wah Café</li>
+      <li>Dim Sum Here 사진: Hong Kong Tourism Board</li>
+      <li>Kam Wah Café 사진: Hong Kong Tourism Board</li>
+      <li>Yat Lok 사진: Hong Kong Tourism Board</li>
+      <li>Australia Dairy Company 사진: Hong Kong Tourism Board / U Lifestyle</li>
+      <li>Kau Kee 사진: Things to do in HK</li>
+      <li>Tai Cheong Bakery 사진: Things to do in HK</li>
+      <li>마지막 저녁 후보 사진: Lei Garden 실제 방문 사진 / Ho Choi 실제 방문 사진</li>
+      <li>중경삼림 촬영지 참고: Chungking Mansions, Graham Street Market, Central–Mid-Levels Escalator, Lan Kwai Fong.</li>
+      <li>Midnight Express의 원래 가게는 현재 남아 있지 않아 Lan Kwai Fong은 장소 분위기만 보는 일정으로 구성.</li>
+      <li>식당 영업시간·휴무·대기 상황은 변동될 수 있으므로 방문 전 재확인 권장.</li>
+    </ul>
+  </details>
+
+  <footer>
+    ※ 식당은 최종 예약/대기시간에 따라 같은 지역 내 대체가 가능하도록 구성했습니다. 핵심은 지역 이동 순서를 유지하는 것입니다.
+  </footer>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const days = document.querySelectorAll('.day');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      days.forEach(d => d.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.target).classList.add('active');
+      window.scrollTo({top: document.querySelector('.tabs').offsetTop - 8, behavior:'smooth'});
+    });
+  });
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function(){
+const routes = {"d1": {"color": "#a33a2b", "summary": "침사추이 안에서 남쪽 해변으로 내려간 뒤, 저녁 식당을 선택하는 동선입니다.", "points": [{"n": "1", "title": "Chungking Mansions", "ll": [22.2965, 114.1723], "q": "Chungking Mansions Hong Kong", "optional": false}, {"n": "2", "title": "K11 MUSEA", "ll": [22.2935, 114.1746], "q": "K11 MUSEA Hong Kong", "optional": false}, {"n": "3", "title": "Avenue of Stars", "ll": [22.293, 114.1759], "q": "Avenue of Stars Hong Kong", "optional": false}, {"n": "4A", "title": "Hoi King Heen", "ll": [22.2982, 114.1797], "q": "Hoi King Heen 70 Mody Road Hong Kong", "optional": true}, {"n": "4B", "title": "Seventh Son · Kowloon", "ll": [22.2954, 114.1739], "q": "Seventh Son H Zentre 15 Middle Road Hong Kong", "optional": true}, {"n": "5", "title": "하버 야경 · 침사추이 해변", "ll": [22.2934, 114.1719], "q": "Tsim Sha Tsui Promenade Hong Kong", "optional": false}], "paths": [[[0, 1, 2], false], [[2, 3, 5], true], [[2, 4, 5], true]], "note": "첫 끼 딤섬집과 호텔은 아직 확정되지 않아 핀을 찍지 않았습니다. 4A·4B는 둘 중 한 곳만 방문합니다."}, "d2": {"color": "#426c55", "summary": "스타페리로 홍콩섬에 들어가 센트럴 골목을 걷고, 오후에 피크로 이동합니다.", "points": [{"n": "1", "title": "침사추이 스타페리 선착장", "ll": [22.2936, 114.1688], "q": "Tsim Sha Tsui Star Ferry Pier", "optional": false}, {"n": "2", "title": "센트럴 스타페리 선착장", "ll": [22.2874, 114.1602], "q": "Central Pier 7 Hong Kong", "optional": false}, {"n": "3", "title": "Graham Street Market", "ll": [22.283, 114.1528], "q": "Graham Street Market Hong Kong", "optional": false}, {"n": "4", "title": "미드레벨 에스컬레이터 · SoHo 구간", "ll": [22.2822, 114.1534], "q": "Central Mid Levels Escalator Hong Kong", "optional": false}, {"n": "5", "title": "Tai Cheong Bakery", "ll": [22.2824, 114.1544], "q": "Tai Cheong Bakery 35 Lyndhurst Terrace", "optional": false}, {"n": "6", "title": "Lan Kwai Fong", "ll": [22.2808, 114.1556], "q": "Lan Kwai Fong Hong Kong", "optional": false}, {"n": "7", "title": "Kau Kee", "ll": [22.2846, 114.1522], "q": "Kau Kee 21 Gough Street", "optional": false}, {"n": "8", "title": "Yat Lok", "ll": [22.2827, 114.155], "q": "Yat Lok 34 Stanley Street", "optional": false}, {"n": "9A", "title": "Goldfinch 옛 주소 · 선택", "ll": [22.2795, 114.1846], "q": "13-15 Lan Fong Road Causeway Bay Hong Kong", "optional": true}, {"n": "9B", "title": "IFC 휴식 · 대안", "ll": [22.2858, 114.1583], "q": "IFC Mall Hong Kong", "optional": true}, {"n": "10", "title": "Victoria Peak · Peak Tower", "ll": [22.2712, 114.1499], "q": "The Peak Tower Hong Kong", "optional": false}], "paths": [[[0, 1, 2, 3, 4, 5, 6, 7], false], [[7, 8, 10], true], [[7, 9, 10], true]], "note": "9A는 폐업한 금작찬청의 옛 주소 방문 + 코즈웨이베이 휴식입니다. 9B는 이를 생략할 때의 IFC 휴식. 두 곳을 연달아 방문하지 않습니다. 피크 핀은 Peak Tower 기준이며 Lugard Road 전망대는 별도 산책입니다."}, "d3": {"color": "#936117", "summary": "몽콕 → 야우마테이 → 조던 → 침사추이로 남하합니다. 쿠키 구매 후 휴식하고 저녁·공항 이동으로 이어집니다.", "points": [{"n": "1", "title": "Kam Wah Café", "ll": [22.3231, 114.1692], "q": "Kam Wah Cafe 47 Bute Street", "optional": false}, {"n": "2", "title": "몽콕 · Ladies’ Market", "ll": [22.3184, 114.1706], "q": "Ladies Market Tung Choi Street", "optional": false}, {"n": "3", "title": "야우마테이 · Tin Hau Temple", "ll": [22.3104, 114.1703], "q": "Tin Hau Temple Yau Ma Tei", "optional": false}, {"n": "4", "title": "Temple Street · 조던 구간", "ll": [22.3064, 114.1698], "q": "Temple Street Night Market Hong Kong", "optional": false}, {"n": "5", "title": "Australia Dairy Company", "ll": [22.3048, 114.1712], "q": "Australia Dairy Company 47 Parkes Street", "optional": false}, {"n": "6", "title": "Jenny Bakery · 침사추이", "ll": [22.2976, 114.1725], "q": "Jenny Bakery Shop 42 Mirador Mansion 62 Nathan Road", "optional": false}, {"n": "7", "title": "하버 마지막 산책", "ll": [22.2934, 114.1719], "q": "Tsim Sha Tsui Promenade Hong Kong", "optional": false}], "paths": [[[0, 1, 2, 3, 4, 5], false], [[5, 6], true]], "note": "6→7 사이에는 호텔 인근 휴식과 저녁 식사가 있습니다. 호텔과 마지막 저녁 지점이 미확정이라 이 구간은 점선으로만 연결했습니다. 공항은 시내 지도가 작아지지 않도록 별도 길찾기로 연결합니다."}};
+const maps = {};
+function show(day){
+ if(typeof L === 'undefined') return;
+ if(maps[day]){maps[day].map.invalidateSize();return;}
+ const route=routes[day];
+ const map=L.map('route-'+day,{scrollWheelZoom:false});
+ const bounds=L.latLngBounds(route.points.map(p=>p.ll));
+ map.fitBounds(bounds,{padding:[28,28],maxZoom:16});
+ const status=document.getElementById('status-'+day);
+ // Public CARTO basemap; only the currently viewed date is loaded.
+ L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'}).on('tileerror',()=>{status.textContent='배경 지도를 불러오지 못했습니다. 아래 Google 지도 링크를 이용하세요.';}).addTo(map);
+ route.paths.forEach(([indices,optional])=>L.polyline(indices.map(i=>route.points[i].ll),{color:route.color,weight:3,opacity:.7,dashArray:optional?'6 7':null}).addTo(map));
+ const markers=route.points.map(point=>{
+  const popup=document.createElement('div');
+  const title=document.createElement('strong');title.textContent=point.n+' · '+point.title;popup.append(title,document.createElement('br'));
+  const link=document.createElement('a');link.textContent='Google 지도에서 장소 확인';link.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(point.q);link.target='_blank';link.rel='noopener';popup.append(link);
+  return L.marker(point.ll,{title:point.n+' '+point.title,icon:L.divIcon({className:'map-pin'+(point.optional?' optional':''),html:'<span style="background:'+route.color+'">'+point.n+'</span>',iconSize:[32,32],iconAnchor:[16,16]})}).addTo(map).bindPopup(popup);
+ });
+ maps[day]={map,bounds,markers};
+}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>requestAnimationFrame(()=>show(tab.dataset.target))));
+document.querySelectorAll('[data-map-reset]').forEach(button=>button.addEventListener('click',()=>{const day=button.dataset.mapReset;show(day);const item=maps[day];if(item)item.map.fitBounds(item.bounds,{padding:[28,28],maxZoom:16});}));
+document.querySelectorAll('.map-pin-link').forEach(button=>button.addEventListener('click',()=>{show(button.dataset.day);const item=maps[button.dataset.day];if(!item)return;const marker=item.markers[Number(button.dataset.index)];item.map.setView(marker.getLatLng(),16);marker.openPopup();document.getElementById('route-'+button.dataset.day).scrollIntoView({behavior:'smooth',block:'center'});}));
+show(document.querySelector('.day.active').id);
+})();
+</script>
+</body>
+</html>
